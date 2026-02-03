@@ -13,7 +13,7 @@ pipeline {
         FULL_IMAGE     = "gowri032/maven-simple:1.0"
     }
     triggers{
-        cron(* * * * *)
+        cron(*/1 * * * *)
     }
 
     stages {
