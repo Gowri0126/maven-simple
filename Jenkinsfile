@@ -20,8 +20,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/Gowri0126/maven-simple.git',
+                git branch: 'main',url: 'https://github.com/Gowri0126/maven-simple.git'
                     credentialsId: 'github-tocken'
             }
         }
