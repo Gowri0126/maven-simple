@@ -3,7 +3,7 @@ pipeline {
 	
 	environment {
 		DOCKERHUB_CRED=credentials('dockerhub')
-		IMAGE_NAME="gowri032/gowri_repo"
+		IMAGE_NAME="maven-simple:1.0"
 	}
 	
 	stages {
