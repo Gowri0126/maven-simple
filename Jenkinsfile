@@ -12,6 +12,9 @@ pipeline {
         IMAGE_TAG      = "1.0"
         FULL_IMAGE     = "gowri032/maven-simple:1.0"
     }
+    triggers{
+        cron(* * * * *)
+    }
 
     stages {
 
