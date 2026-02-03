@@ -1,75 +1,54 @@
 pipeline {
-    agent any
+	agent any
+	
+	environment {
+		DOCKERHUB_CRED=credentials('dockerhub')
+		IMAGE_NAME="gowri032/gowri_repo"
+	}
+	
+	stages {
+		stage('checkout') {
+			steps {
+				git url:'https://github.com/Gowri0126/maven-simple.git', branch:'main'
+			}
+		}
 
-    tools {
-        jdk 'Java17'
-        maven 'Maven3'
-    }
+		stage('Build Maven Project') {
+			steps {
+				sh "mvn clean package -DskipTests"
+			}
+		}
+		
+		stage('Build Docker Image') {
+            		steps {
+                		script {
+                    			dockerImage = docker.build("maven-simple:1.0")
+                		}
+            		}
+        	}
 
-    environment {
-        DOCKERHUB_USER = "Gowri0126"
-        IMAGE_NAME     = "maven-simple"
-        IMAGE_TAG      = "1.0"
-        FULL_IMAGE     = "gowri032/maven-simple:1.0"
-    }
-    triggers{
-        cron(*/1 * * * *)
-    }
+		stage('Push Docker Image'){
+			steps {
+				script {
+					docker.withRegistry('https://index.docker.io/v1/','dockerhub'){
+						dockerImage.push()
+					}
+				}
+			}
+		}	
+	}
+	
+	post {
+		success {
+			echo "Pipeline Successful"
+		}
+		failure {
+			echo "Pipeline Failure"
+		}
+		always {
+			echo "Cleaning workspace"
+			deleteDir()
+		}
+	}
 
-    stages {
-
-        stage('Checkout') {
-            steps {
-                git branch: 'main',url: 'https://github.com/Gowri0126/maven-simple.git'
-                    credentialsId: 'github-tocken'
-            }
-        }
-
-        stage('Build JAR') {
-            steps {
-                sh 'mvn clean package'
-            }
-        }
-
-        stage('Verify JAR') {
-            steps {
-                sh 'java -jar target/maven-simple-1.0-SNAPSHOT.jar'
-            }
-        }
-
-        stage('Docker Build') {
-            steps {
-                sh 'docker build -t maven-simple:1.0 .'
-            }
-        }
-
-        stage('Docker Login') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'Docker-jenkins-PAT',
-                    usernameVariable: 'gowri032',
-                    passwordVariable: 'g123456789'
-                )]) {
-                    sh '''
-                        echo "g123456789" | docker login -u "gowri032" --password-stdin
-                    '''
-                }
-            }
-        }
-
-        stage('Docker Push') {
-            steps {
-                sh 'docker push maven-simple'
-            }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ Image pushed to Docker Hub: maven-simple:1.0"
-        }
-        always {
-            sh 'docker logout || true'
-        }
-    }
 }
